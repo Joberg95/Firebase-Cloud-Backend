@@ -1,5 +1,7 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const express = require("express");
+const app = express();
 
 admin.initializeApp();
 
@@ -12,9 +14,6 @@ const firebaseConfig = {
   messagingSenderId: "580979328273",
   appId: "1:580979328273:web:a9d2b92100311e83"
 };
-
-const express = require("express");
-const app = express();
 
 const firebase = require("firebase");
 firebase.initializeApp();
@@ -63,5 +62,16 @@ app.post("/scream", (req, res) => {
       console.error(err);
     });
 });
+
+// signup route
+
+app.post('/signup', (req, res) => {
+    const newUser = {
+        email: req.body.email,
+        password: req.body.password,
+        confirmPassword: req.body.confirmPassword,
+        handle: req.body.handle,
+    }
+})
 
 exports.api = functions.https.onRequest(app);
