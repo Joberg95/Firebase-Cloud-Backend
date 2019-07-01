@@ -3,14 +3,27 @@ const admin = require("firebase-admin");
 
 admin.initializeApp();
 
+const firebaseConfig = {
+  apiKey: "AIzaSyCMW7hFqdxtLav5jPLyF3_FAURuCy38IRQ",
+  authDomain: "socialape-2abc8.firebaseapp.com",
+  databaseURL: "https://socialape-2abc8.firebaseio.com",
+  projectId: "socialape-2abc8",
+  storageBucket: "socialape-2abc8.appspot.com",
+  messagingSenderId: "580979328273",
+  appId: "1:580979328273:web:a9d2b92100311e83"
+};
+
 const express = require("express");
 const app = express();
+
+const firebase = require("firebase");
+firebase.initializeApp();
 
 app.get("/screams", (req, res) => {
   admin
     .firestore()
     .collection("screams")
-    .orderBy('createdAt', 'desc')
+    .orderBy("createdAt", "desc")
     .get()
     .then(data => {
       let screams = [];
