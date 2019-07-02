@@ -5,7 +5,7 @@ const app = express();
 
 admin.initializeApp();
 
-const firebaseConfig = {
+const config = {
   apiKey: "AIzaSyCMW7hFqdxtLav5jPLyF3_FAURuCy38IRQ",
   authDomain: "socialape-2abc8.firebaseapp.com",
   databaseURL: "https://socialape-2abc8.firebaseio.com",
@@ -18,9 +18,10 @@ const firebaseConfig = {
 const firebase = require("firebase");
 firebase.initializeApp();
 
+const db = admin.firestore();
+
 app.get("/screams", (req, res) => {
-  admin
-    .firestore()
+    db
     .collection("screams")
     .orderBy("createdAt", "desc")
     .get()
@@ -50,8 +51,7 @@ app.post("/scream", (req, res) => {
     createdAt: new Date().toISOString()
   };
 
-  admin
-    .firestore()
+  db
     .collection("screams")
     .add(newScream)
     .then(doc => {
