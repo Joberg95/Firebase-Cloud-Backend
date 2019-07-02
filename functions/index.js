@@ -1,69 +1,72 @@
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-const express = require("express");
-const app = express();
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const app = require('express')();
 
 admin.initializeApp();
 
-// const config = {
-//   apiKey: "AIzaSyCMW7hFqdxtLav5jPLyF3_FAURuCy38IRQ",
-//   authDomain: "socialape-2abc8.firebaseapp.com",
-//   databaseURL: "https://socialape-2abc8.firebaseio.com",
-//   projectId: "socialape-2abc8",
-//   storageBucket: "socialape-2abc8.appspot.com",
-//   messagingSenderId: "580979328273",
-//   appId: "1:580979328273:web:a9d2b92100311e83"
-// };
+const config = {
+  apiKey: 'AIzaSyBGE61bBXSyRfOccvujvR8VjWfB1BjW-Og',
+  authDomain: 'socialape-d081e.firebaseapp.com',
+  databaseURL: 'https://socialape-d081e.firebaseio.com',
+  projectId: 'socialape-d081e',
+  storageBucket: 'socialape-d081e.appspot.com',
+  messagingSenderId: '354040522108'
+};
 
-const firebase = require("firebase");
-firebase.initializeApp();
+const firebase = require('firebase');
+firebase.initializeApp(config);
 
 const db = admin.firestore();
 
-app.get("/screams", (req, res) => {
-  db.collection("screams")
-    .orderBy("createdAt", "desc")
+app.get('/screams', (req, res) => {
+  db.collection('screams')
+    .orderBy('createdAt', 'desc')
     .get()
-    .then(data => {
+    .then((data) => {
       let screams = [];
-      data.forEach(doc => {
+      data.forEach((doc) => {
         screams.push({
           screamId: doc.id,
-          // spread operator
-          ...doc.data(),
+          body: doc.data().body,
           userHandle: doc.data().userHandle,
-          createdAt: doc.data().createdAt
+          createdAt: doc.data().createdAt,
+          commentCount: doc.data().commentCount,
+          likeCount: doc.data().likeCount
         });
       });
       return res.json(screams);
     })
-    .catch(err => console.error(err));
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: err.code });
+    });
 });
 
-app.post("/scream", (req, res) => {
-  if (req.method !== "POST") {
-    return res.status(400).json({ error: "Method not allowed" });
+// Post one scream
+app.post('/scream', (req, res) => {
+  if (req.body.body.trim() === '') {
+    return res.status(400).json({ body: 'Body must not be empty' });
   }
+
   const newScream = {
     body: req.body.body,
     userHandle: req.body.userHandle,
     createdAt: new Date().toISOString()
   };
 
-  db.collection("screams")
+  db.collection('screams')
     .add(newScream)
-    .then(doc => {
+    .then((doc) => {
       res.json({ message: `document ${doc.id} created successfully` });
     })
-    .catch(err => {
-      res.status(500).json({ error: "something went wrong" });
+    .catch((err) => {
+      res.status(500).json({ error: 'something went wrong' });
       console.error(err);
     });
 });
 
-// signup route
-
-app.post("/signup", (req, res) => {
+// Signup route
+app.post('/signup', (req, res) => {
   const newUser = {
     email: req.body.email,
     password: req.body.password,
@@ -71,26 +74,44 @@ app.post("/signup", (req, res) => {
     handle: req.body.handle
   };
 
+  // TODO: validate data
+  let token, userId;
   db.doc(`/users/${newUser.handle}`)
     .get()
-    .then(doc => {
+    .then((doc) => {
       if (doc.exists) {
-        return res.status(400).json({ handle: "this handle is already taken" });
+        return res.status(400).json({ handle: 'this handle is already taken' });
       } else {
         return firebase
           .auth()
           .createUserWithEmailAndPassword(newUser.email, newUser.password);
       }
     })
-    .then(data => {
+    .then((data) => {
+      userId = data.user.uid;
       return data.user.getIdToken();
     })
-    .then(token => {
+    .then((idToken) => {
+      token = idToken;
+      const userCredentials = {
+        handle: newUser.handle,
+        email: newUser.email,
+        createdAt: new Date().toISOString(),
+        userId
+      };
+      return db.doc(`/users/${newUser.handle}`).set(userCredentials);
+    })
+    .then(() => {
       return res.status(201).json({ token });
     })
-    .catch(err => {
-        console.error(err);
+    .catch((err) => {
+      console.error(err);
+      if (err.code === 'auth/email-already-in-use') {
+        return res.status(400).json({ email: 'Email is already is use' });
+      } else {
         return res.status(500).json({ error: err.code });
-    })
+      }
+    });
+});
 
-exports.api = functions.https.onRequest(app);
+exports.api = functions.region('europe-west1').https.onRequest(app);
