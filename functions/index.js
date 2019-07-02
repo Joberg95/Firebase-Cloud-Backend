@@ -5,14 +5,15 @@ const app = require('express')();
 admin.initializeApp();
 
 const config = {
-  apiKey: 'AIzaSyBGE61bBXSyRfOccvujvR8VjWfB1BjW-Og',
-  authDomain: 'socialape-d081e.firebaseapp.com',
-  databaseURL: 'https://socialape-d081e.firebaseio.com',
-  projectId: 'socialape-d081e',
-  storageBucket: 'socialape-d081e.appspot.com',
-  messagingSenderId: '354040522108'
-};
-
+    apiKey: "AIzaSyCMW7hFqdxtLav5jPLyF3_FAURuCy38IRQ",
+    authDomain: "socialape-2abc8.firebaseapp.com",
+    databaseURL: "https://socialape-2abc8.firebaseio.com",
+    projectId: "socialape-2abc8",
+    storageBucket: "socialape-2abc8.appspot.com",
+    messagingSenderId: "580979328273",
+    appId: "1:580979328273:web:a9d2b92100311e83"
+  };
+  
 const firebase = require('firebase');
 firebase.initializeApp(config);
 
